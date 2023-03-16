@@ -22,6 +22,24 @@ public class MemberController {
     private final Rq rq;
 
     @GetMapping("/member/login")
+    public String showLogin() {
+        if (rq.isLogined()) {
+            return """
+                    <h1>이미 로그인 되었습니다.</h1>
+                    """.stripIndent();
+        }
+
+        return """
+                <h1>로그인</h1>
+                <form action="doLogin">
+                <input type="text" placeholder="아이디" name="username">
+                <input type="password" placeholder="비번호" name="password">
+                <input type="submit" value="로그인">
+                </form>
+                """;
+    }
+
+    @GetMapping("/member/doLogin")
     public LoginRes login(@RequestParam("username") String username, @RequestParam("password") String password)
     {
         if (username == null || username.trim().length() == 0) {
@@ -35,22 +53,25 @@ public class MemberController {
         LoginRes loginRes = memberService.tryLogin(username, password);
 
         if(loginRes.getResultCode().equals("S-1"))
-            rq.setCookie("username", username);
+            rq.setSession("username", username);
 
         return loginRes;
 
     }
     @GetMapping("/member/logout")
     public LoginRes logout(HttpServletRequest req, HttpServletResponse res) {
-        rq.removeCookie("username");
+        boolean cookieRemoved = rq.isLogout();
 
+        if (cookieRemoved == false) {
+            return LoginRes.of("S-2", "이미 로그아웃 상태입니다.");
+        }
 
         return LoginRes.of("S-1", "로그아웃 되었습니다.");
     }
     @GetMapping("/member/me")
     public LoginRes me(HttpServletRequest req, HttpServletResponse res){
-        String username = rq.getCookie("username");
-        if (username == null)
+        String username = rq.getSession("username","null");
+        if (username.equals("null"))
             return LoginRes.of("F-1", "로그인 후 이용해주세요.");
 
 

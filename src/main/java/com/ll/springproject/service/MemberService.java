@@ -16,18 +16,19 @@ public class MemberService {
     public LoginRes tryLogin(String username, String password)
     {
         Member member = memberRepository.findByUsername(username);
-        if (username.equals(member.getName())){
-            if(password.equals(member.getPassword())){
-                return  LoginRes.of(member.getName() +" 님 환영합니다","S-1");
-            }
-            else {
-                return LoginRes.of("비밀번호가 일치하지 않습니다.","F-1");
-            }
+        if (member == null){
+            return LoginRes.of(username + " 는 존재하지 않는 회원입니다","F-2");
         }
         else{
-            return LoginRes.of(member.getName() + " 는 존재하지 않는 회원입니다","F-2");
+            if (username.equals(member.getName())) {
+                if (password.equals(member.getPassword())) {
+                    return LoginRes.of(member.getName() + " 님 환영합니다", "S-1");
+                } else {
+                    return LoginRes.of("비밀번호가 일치하지 않습니다.", "F-1");
+                }
+            }
         }
-
+        return null;
     }
     public void signup(String username, String password){
         memberRepository.save(username, password);

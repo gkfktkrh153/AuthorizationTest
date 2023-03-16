@@ -4,6 +4,7 @@ import com.ll.springproject.domain.LoginRes;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
@@ -53,5 +54,26 @@ public class Rq {
 
     public void setCookie(String name, String value) {
         res.addCookie(new Cookie(name, value));
+    }
+    public void setSession(String name, String value) {
+        HttpSession session = req.getSession();
+        session.setAttribute(name, value);
+    }
+    public String getSession(String name, String defaultValue) {
+        try {
+            String value = (String) req.getSession().getAttribute(name);
+            if (value == null) return defaultValue;
+            return value;
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+    public boolean isLogined() {
+        String username = getSession("username","null");
+        return !username.equals("null");
+    }
+
+    public boolean isLogout() {
+        return !isLogined();
     }
 }
